@@ -1,0 +1,111 @@
+---
+title: "Practical machine learning"
+author: "Anteneh"
+date: "July 14, 2015"
+output: html_document
+---
+First we load the necessary packages and set the seed inorder to get reproduceable results and set our working directory.
+```{r}
+library(AppliedPredictiveModeling)
+library(caret)
+library(rattle)
+library(rpart.plot)
+library(randomForest)
+```
+Our data may have NA, blank and #DIV/0!. To get rid of these we defined vector of na.strings and replace by NA.Because both data sets contain columns with all missing values, we will delete these and this help us to clean a data. 
+
+```{r, echo=FALSE}
+set.seed(1212)
+MyTrainingset <- read.csv("pml-training.csv", na.strings=c("NA","#DIV/0!", ""), header=TRUE)
+ 
+MyTestingset <- read.csv("pml-testing.csv", na.strings=c("NA","#DIV/0!", ""), header=TRUE)
+
+dim(MyTrainingset)
+dim(MyTestingset)
+```
+After that we have checked the dimension of the new data set and then delete columns with missing values.
+
+```{r, echo=FALSE}
+MyTrainingset<-MyTrainingset[,colSums(is.na(MyTrainingset)) == 0]
+MyTestingset <-MyTestingset[,colSums(is.na(MyTestingset)) == 0]
+```
+<p>
+The first 7 columns such as user_name, raw_timestamp_part_1, raw_timestamp_part_2 cvtd_timestamp, new_window, and  num_window are unnecessary for predicting our project, we delete all these variables.</p>
+
+```{r, echo=FALSE}
+MyTrainingset <-MyTrainingset[,-c(1:7)]
+MyTestingset <-MyTestingset[,-c(1:7)]
+```
+Our new training data set contains 53 variables and 19622 observations where as
+the testing data set contains 53 variables and 20 observations.
+```{r, echo=FALSE}
+dim(MyTrainingset)
+dim(MyTestingset)
+```
+
+Since the data we are working is too large to performe an algorithm, the given training data set partitioned into two: Training data set into two data sets, 60% for myTraining, and subTest 40%. This can be performed with random sampling without replacement.
+
+```{r, echo=FALSE}
+SubTrainingsetsamples <- createDataPartition(y=MyTrainingset$classe, p=0.60, list=FALSE)
+SubTrainingset <- MyTrainingset[SubTrainingsetsamples, ] 
+SubTestingset <- MyTrainingset[-SubTrainingsetsamples, ]
+dim(SubTrainingset)
+dim(SubTestingset)
+head(SubTrainingset)
+head(SubTestingset)
+```
+When we look at variable “classe”, it contains 5 levels: A, B, C, D and E. A plot of the 
+outcome variable will allow us to see the frequency of each levels in the SubTrainingset 
+data set. As we can see in the figure below level A has more than 4000 occurrences than other levels.
+```{r, echo=FALSE}
+plot(SubTrainingset$classe, col="green", main="Plot of levels vs frequency in SubTrainingset data set", xlab="Classe levels", ylab="Frequency")
+```
+
+For predicition we used Decision Tree and Random Forest prediction modesl.
+
+```{r, echo=FALSE}
+Modelrepart <- rpart(classe ~ ., data=SubTrainingset, method="class")
+```
+1. Predicting using Decision Tree and Testing the results on SubTestingset data set
+```{r, echo=FALSE}
+
+Prediction_Modelrepart <- predict(Modelrepart, SubTestingset, type = "class")
+```
+
+```{r, echo=FALSE}
+rpart.plot(Modelrepart, main="Plot of the Decision Tree", type=0, extra=104,box.col=2, under=TRUE,varlen=2, faclen=2)
+```
+```{r, echo=FALSE}
+confusionMatrix(Prediction_Modelrepart, SubTestingset$classe)
+```
+2. Predicting using Random Forest and Test the results on SubTestingset data set.
+
+```{r, echo=FALSE}
+ModelrandomForest <- randomForest(classe ~. , data=SubTrainingset, method="class")
+Prediction_Modelrandomforest <- predict(ModelrandomForest, SubTestingset, type = "class")
+confusionMatrix(Prediction_Modelrandomforest, SubTestingset$classe)
+```
+
+
+As shown above the accuracy for Random Forest model is 0.9927 where as for for Decision Tree model is  0.7405. Therefore Random Forest algorithm is choosen because it performed better than Decision Trees.  From our cross-validation data none of the test samples will be missclassified. 
+```{r,echo=FALSE}
+predictedresult <- predict(ModelrandomForest, MyTestingset, type="class")
+predictedresult
+```
+```{r}
+# Write files for submission
+pml_write_files = function(x){
+      n = length(x)
+      for(i in 1:n){
+            filename = paste0("problem_id_",i,".txt")
+            write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
+      }
+}
+
+pml_write_files(predictedresult)
+```
+<h6> References</h6>
+
+1. http://www.jstatsoft.org/v28/i05/paper
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
