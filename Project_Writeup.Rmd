@@ -1,10 +1,10 @@
 ---
-title: "Practical machine learning"
+title: "Practical Machine Learning"
 author: "Anteneh"
 date: "July 14, 2015"
-output: html_document
+output: pdf_document
 ---
-First we load the necessary packages and set the seed inorder to get reproduceable results and set our working directory.
+First we load the necessary packages and set the seed in order to get reproducible results. 
 ```{r}
 library(AppliedPredictiveModeling)
 library(caret)
@@ -12,7 +12,7 @@ library(rattle)
 library(rpart.plot)
 library(randomForest)
 ```
-Our data may have NA, blank and #DIV/0!. To get rid of these we defined vector of na.strings and replace by NA.Because both data sets contain columns with all missing values, we will delete these and this help us to clean a data. 
+Our data may have NA, blank and #DIV/0!. To get rid of these we defined vector of na.strings and replace by NA. Because both data sets contain columns with all missing values, we will delete these inoredr to get clean a data. 
 
 ```{r, echo=FALSE}
 set.seed(1212)
@@ -23,7 +23,7 @@ MyTestingset <- read.csv("pml-testing.csv", na.strings=c("NA","#DIV/0!", ""), he
 dim(MyTrainingset)
 dim(MyTestingset)
 ```
-After that we have checked the dimension of the new data set and then delete columns with missing values.
+We have checked the dimension of the new data set and then delete columns with missing values.
 
 ```{r, echo=FALSE}
 MyTrainingset<-MyTrainingset[,colSums(is.na(MyTrainingset)) == 0]
@@ -36,23 +36,23 @@ The first 7 columns such as user_name, raw_timestamp_part_1, raw_timestamp_part_
 MyTrainingset <-MyTrainingset[,-c(1:7)]
 MyTestingset <-MyTestingset[,-c(1:7)]
 ```
-Our new training data set contains 53 variables and 19622 observations where as
-the testing data set contains 53 variables and 20 observations.
+Our new training data set contains 53 variables and 19622 observations where as  the testing data set contains 53 variables and 20 observations.
+
 ```{r, echo=FALSE}
 dim(MyTrainingset)
 dim(MyTestingset)
 ```
 
-Since the data we are working is too large to performe an algorithm, the given training data set partitioned into two: Training data set into two data sets, 60% for myTraining, and subTest 40%. This can be performed with random sampling without replacement.
+Since the data we are working is too large to perform an algorithm, the given training data set partitioned into two: Training data set into two data sets, 60% for myTraining, and subTest 40%. This can be performed with random sampling without replacement.
 
 ```{r, echo=FALSE}
 SubTrainingsetsamples <- createDataPartition(y=MyTrainingset$classe, p=0.60, list=FALSE)
 SubTrainingset <- MyTrainingset[SubTrainingsetsamples, ] 
 SubTestingset <- MyTrainingset[-SubTrainingsetsamples, ]
-dim(SubTrainingset)
-dim(SubTestingset)
-head(SubTrainingset)
-head(SubTestingset)
+#dim(SubTrainingset)
+#dim(SubTestingset)
+#head(SubTrainingset)
+#head(SubTestingset)
 ```
 When we look at variable “classe”, it contains 5 levels: A, B, C, D and E. A plot of the 
 outcome variable will allow us to see the frequency of each levels in the SubTrainingset 
@@ -61,7 +61,7 @@ data set. As we can see in the figure below level A has more than 4000 occurrenc
 plot(SubTrainingset$classe, col="green", main="Plot of levels vs frequency in SubTrainingset data set", xlab="Classe levels", ylab="Frequency")
 ```
 
-For predicition we used Decision Tree and Random Forest prediction modesl.
+For prediction we used Decision Tree and Random Forest prediction models.
 
 ```{r, echo=FALSE}
 Modelrepart <- rpart(classe ~ ., data=SubTrainingset, method="class")
@@ -87,7 +87,7 @@ confusionMatrix(Prediction_Modelrandomforest, SubTestingset$classe)
 ```
 
 
-As shown above the accuracy for Random Forest model is 0.9927 where as for for Decision Tree model is  0.7405. Therefore Random Forest algorithm is choosen because it performed better than Decision Trees.  From our cross-validation data none of the test samples will be missclassified. 
+As shown above the accuracy for Random Forest model is 0.9927 where as for for Decision Tree model is  0.7405. Therefore Random Forest algorithm is chosen because it performed better than Decision Trees.  From our cross-validation data none of the test samples will be miss classified. 
 ```{r,echo=FALSE}
 predictedresult <- predict(ModelrandomForest, MyTestingset, type="class")
 predictedresult
