@@ -12,7 +12,7 @@ library(rattle)
 library(rpart.plot)
 library(randomForest)
 ```
-Our data may have NA, blank and #DIV/0!. To get rid of these we defined vector of na.strings and replace by NA. Because both data sets contain columns with all missing values, we will delete these inoredr to get clean a data. 
+Our data may have NA, blank and #DIV/0!. To get rid of these we defined vector of na.strings and replace by NA. Because both data sets contain columns with all missing values, we will delete these inoredr to get clean data. 
 
 ```{r, echo=FALSE}
 set.seed(1212)
@@ -54,11 +54,10 @@ SubTestingset <- MyTrainingset[-SubTrainingsetsamples, ]
 #head(SubTrainingset)
 #head(SubTestingset)
 ```
-When we look at variable “classe”, it contains 5 levels: A, B, C, D and E. A plot of the 
-outcome variable will allow us to see the frequency of each levels in the SubTrainingset 
-data set. As we can see in the figure below level A has more than 4000 occurrences than other levels.
+When we look at variable “classe”, it contains 5 levels: A, B, C, D and E. A plot of the outcome variable will allow us to see the frequency of each levels in the SubTraining data set. As we can see in the figure below level A has more than 4000 occurrences than other levels.
+
 ```{r, echo=FALSE}
-plot(SubTrainingset$classe, col="green", main="Plot of levels vs frequency in SubTrainingset data set", xlab="Classe levels", ylab="Frequency")
+plot(SubTrainingset$classe, col="green", main="Plot of levels vs frequency in SubTraining data set", xlab="Classe levels", ylab="Frequency")
 ```
 
 For prediction we used Decision Tree and Random Forest prediction models.
