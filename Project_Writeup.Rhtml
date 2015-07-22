@@ -1,0 +1,138 @@
+<html>
+
+<head>
+<title>Practical Machine Learning</title>
+</head>
+
+<body>
+
+<p>TFirst we load the necessary packages and set the seed in order to get reproducible results. 
+<!--begin.rcode
+library(AppliedPredictiveModeling)
+library(caret)
+library(rattle)
+library(rpart.plot)
+library(randomForest)
+end.rcode-->
+Our data may have NA, blank and #DIV/0!. To get rid of these we defined vector of na.strings and replace by NA. Because both data sets contain columns with all missing values, we will delete these inoredr to get clean data. :</p>
+
+<!--begin.rcode
+set.seed(1212)
+MyTrainingset <- read.csv("pml-training.csv", na.strings=c("NA","#DIV/0!", ""), header=TRUE)
+ 
+MyTestingset <- read.csv("pml-testing.csv", na.strings=c("NA","#DIV/0!", ""), header=TRUE)
+
+dim(MyTrainingset)
+dim(MyTestingset)
+end.rcode-->
+
+
+
+
+<p>We have checked the dimension of the new data set and then delete columns with missing values.</p>
+
+<!--begin.rcode
+MyTrainingset<-MyTrainingset[,colSums(is.na(MyTrainingset)) == 0]
+MyTestingset <-MyTestingset[,colSums(is.na(MyTestingset)) == 0]
+end.rcode-->
+
+<p>
+The first 7 columns such as user_name, raw_timestamp_part_1, raw_timestamp_part_2 cvtd_timestamp, new_window, and  num_window are unnecessary for predicting our project, we delete all these variables.</p>
+
+
+<!--begin.rcode
+MyTrainingset <-MyTrainingset[,-c(1:7)]
+MyTestingset <-MyTestingset[,-c(1:7)]
+end.rcode-->
+
+<p> Our new training data set contains 53 variables and 19622 observations where as  the testing data set contains 53 variables and 20 observations.</p>
+
+<!--begin.rcode
+dim(MyTrainingset)
+dim(MyTestingset)
+end.rcode-->
+
+
+
+
+
+<p>Since the data we are working is too large to perform an algorithm, the given training data set partitioned into two: Training data set into two data sets, 60% for myTraining, and subTest 40%. This can be performed with random sampling without replacement.</p>
+
+<!--begin.rcode
+SubTrainingsetsamples <- createDataPartition(y=MyTrainingset$classe, p=0.60, list=FALSE)
+SubTrainingset <- MyTrainingset[SubTrainingsetsamples, ] 
+SubTestingset <- MyTrainingset[-SubTrainingsetsamples, ]
+#dim(SubTrainingset)
+#dim(SubTestingset)
+#head(SubTrainingset)
+#head(SubTestingset)
+end.rcode-->
+
+<p>When we look at variable “classe”, it contains 5 levels: A, B, C, D and E. A plot of the outcome variable will allow us to see the frequency of each levels in the SubTraining data set. As we can see in the figure below level A has more than 4000 occurrences than other levels.</p>
+
+<!--begin.rcode
+plot(SubTrainingset$classe, col="green", main="Plot of levels vs frequency in SubTraining data set", xlab="Classe levels", ylab="Frequency")
+end.rcode-->
+
+<p>For prediction we used Decision Tree and Random Forest prediction models.</p>
+
+<!--begin.rcode
+Modelrepart <- rpart(classe ~ ., data=SubTrainingset, method="class")
+end.rcode-->
+<p>1. Predicting using Decision Tree and Testing the results on SubTestingset data set</p>
+<!--begin.rcode
+Prediction_Modelrepart <- predict(Modelrepart, SubTestingset, type = "class")
+end.rcode-->
+
+<!--begin.rcode
+rpart.plot(Modelrepart, main="Plot of the Decision Tree", type=0, extra=104,box.col=2, under=TRUE,varlen=2, faclen=2)
+end.rcode-->
+
+<!--begin.rcode
+confusionMatrix(Prediction_Modelrepart, SubTestingset$classe)
+end.rcode-->
+<p>2. Predicting using Random Forest and Test the results on SubTestingset data set.</p>
+
+<!--begin.rcode
+ModelrandomForest <- randomForest(classe ~. , data=SubTrainingset, method="class")
+Prediction_Modelrandomforest <- predict(ModelrandomForest, SubTestingset, type = "class")
+confusionMatrix(Prediction_Modelrandomforest, SubTestingset$classe)
+end.rcode-->
+
+
+<p>As shown above the accuracy for Random Forest model is 0.9927 where as for for Decision Tree model is  0.7405. Therefore Random Forest algorithm is chosen because it performed better than Decision Trees.  From our cross-validation data none of the test samples will be miss classified.</p> 
+<!--begin.rcode
+predictedresult <- predict(ModelrandomForest, MyTestingset, type="class")
+predictedresult
+end.rcode-->
+
+<!--begin.rcode
+# Write files for submission
+pml_write_files = function(x){
+      n = length(x)
+      for(i in 1:n){
+            filename = paste0("problem_id_",i,".txt")
+            write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
+      }
+}
+
+pml_write_files(predictedresult)
+end.rcode-->
+
+<h6> References</h6>
+
+1. http://www.jstatsoft.org/v28/i05/paper
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+
+
+
+
+<!--begin.rcode fig.width=7, fig.height=6
+plot(cars)
+end.rcode-->
+
+</body>
+</html>

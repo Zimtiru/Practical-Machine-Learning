@@ -1,0 +1,280 @@
+<html>
+
+<head>
+<style type="text/css">
+.knitr .inline {
+  background-color: #f7f7f7;
+  border:solid 1px #B0B0B0;
+}
+.error {
+	font-weight: bold;
+	color: #FF0000;
+}
+.warning {
+	font-weight: bold;
+}
+.message {
+	font-style: italic;
+}
+.source, .output, .warning, .error, .message {
+	padding: 0 1em;
+  border:solid 1px #F7F7F7;
+}
+.source {
+  background-color: #f5f5f5;
+}
+.rimage .left {
+  text-align: left;
+}
+.rimage .right {
+  text-align: right;
+}
+.rimage .center {
+  text-align: center;
+}
+.hl.num {
+  color: #AF0F91;
+}
+.hl.str {
+  color: #317ECC;
+}
+.hl.com {
+  color: #AD95AF;
+  font-style: italic;
+}
+.hl.opt {
+  color: #000000;
+}
+.hl.std {
+  color: #585858;
+}
+.hl.kwa {
+  color: #295F94;
+  font-weight: bold;
+}
+.hl.kwb {
+  color: #B05A65;
+}
+.hl.kwc {
+  color: #55aa55;
+}
+.hl.kwd {
+  color: #BC5A65;
+  font-weight: bold;
+}
+</style>
+<title>Practical Machine Learning</title>
+</head>
+
+<body>
+
+<p>TFirst we load the necessary packages and set the seed in order to get reproducible results. 
+<div class="chunk" id="unnamed-chunk-1"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">library</span><span class="hl std">(AppliedPredictiveModeling)</span>
+<span class="hl kwd">library</span><span class="hl std">(caret)</span>
+</pre></div>
+<div class="message"><pre class="knitr r">## Loading required package: lattice
+## Loading required package: ggplot2
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">library</span><span class="hl std">(rattle)</span>
+</pre></div>
+<div class="message"><pre class="knitr r">## Loading required package: RGtk2
+## Rattle: A free graphical interface for data mining with R.
+## Version 3.5.0 Copyright (c) 2006-2015 Togaware Pty Ltd.
+## Type 'rattle()' to shake, rattle, and roll your data.
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">library</span><span class="hl std">(rpart.plot)</span>
+</pre></div>
+<div class="message"><pre class="knitr r">## Loading required package: rpart
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">library</span><span class="hl std">(randomForest)</span>
+</pre></div>
+<div class="message"><pre class="knitr r">## randomForest 4.6-10
+## Type rfNews() to see new features/changes/bug fixes.
+</pre></div>
+</div></div>
+Our data may have NA, blank and #DIV/0!. To get rid of these we defined vector of na.strings and replace by NA. Because both data sets contain columns with all missing values, we will delete these inoredr to get clean data. :</p>
+
+<div class="chunk" id="unnamed-chunk-2"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">set.seed</span><span class="hl std">(</span><span class="hl num">1212</span><span class="hl std">)</span>
+<span class="hl std">MyTrainingset</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">read.csv</span><span class="hl std">(</span><span class="hl str">&quot;pml-training.csv&quot;</span><span class="hl std">,</span> <span class="hl kwc">na.strings</span><span class="hl std">=</span><span class="hl kwd">c</span><span class="hl std">(</span><span class="hl str">&quot;NA&quot;</span><span class="hl std">,</span><span class="hl str">&quot;#DIV/0!&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;&quot;</span><span class="hl std">),</span> <span class="hl kwc">header</span><span class="hl std">=</span><span class="hl num">TRUE</span><span class="hl std">)</span>
+</pre></div>
+<div class="warning"><pre class="knitr r">## Warning in file(file, &quot;rt&quot;): cannot open file 'pml-training.csv': No such
+## file or directory
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in file(file, &quot;rt&quot;): cannot open the connection
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl std">MyTestingset</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">read.csv</span><span class="hl std">(</span><span class="hl str">&quot;pml-testing.csv&quot;</span><span class="hl std">,</span> <span class="hl kwc">na.strings</span><span class="hl std">=</span><span class="hl kwd">c</span><span class="hl std">(</span><span class="hl str">&quot;NA&quot;</span><span class="hl std">,</span><span class="hl str">&quot;#DIV/0!&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;&quot;</span><span class="hl std">),</span> <span class="hl kwc">header</span><span class="hl std">=</span><span class="hl num">TRUE</span><span class="hl std">)</span>
+</pre></div>
+<div class="warning"><pre class="knitr r">## Warning in file(file, &quot;rt&quot;): cannot open file 'pml-testing.csv': No such
+## file or directory
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in file(file, &quot;rt&quot;): cannot open the connection
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">dim</span><span class="hl std">(MyTrainingset)</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in eval(expr, envir, enclos): object 'MyTrainingset' not found
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">dim</span><span class="hl std">(MyTestingset)</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in eval(expr, envir, enclos): object 'MyTestingset' not found
+</pre></div>
+</div></div>
+
+
+
+
+<p>We have checked the dimension of the new data set and then delete columns with missing values.</p>
+
+<div class="chunk" id="unnamed-chunk-3"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl std">MyTrainingset</span><span class="hl kwb">&lt;-</span><span class="hl std">MyTrainingset[,</span><span class="hl kwd">colSums</span><span class="hl std">(</span><span class="hl kwd">is.na</span><span class="hl std">(MyTrainingset))</span> <span class="hl opt">==</span> <span class="hl num">0</span><span class="hl std">]</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in eval(expr, envir, enclos): object 'MyTrainingset' not found
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl std">MyTestingset</span> <span class="hl kwb">&lt;-</span><span class="hl std">MyTestingset[,</span><span class="hl kwd">colSums</span><span class="hl std">(</span><span class="hl kwd">is.na</span><span class="hl std">(MyTestingset))</span> <span class="hl opt">==</span> <span class="hl num">0</span><span class="hl std">]</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in eval(expr, envir, enclos): object 'MyTestingset' not found
+</pre></div>
+</div></div>
+
+<p>
+The first 7 columns such as user_name, raw_timestamp_part_1, raw_timestamp_part_2 cvtd_timestamp, new_window, and  num_window are unnecessary for predicting our project, we delete all these variables.</p>
+
+
+<div class="chunk" id="unnamed-chunk-4"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl std">MyTrainingset</span> <span class="hl kwb">&lt;-</span><span class="hl std">MyTrainingset[,</span><span class="hl opt">-</span><span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl num">7</span><span class="hl std">)]</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in eval(expr, envir, enclos): object 'MyTrainingset' not found
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl std">MyTestingset</span> <span class="hl kwb">&lt;-</span><span class="hl std">MyTestingset[,</span><span class="hl opt">-</span><span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl num">7</span><span class="hl std">)]</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in eval(expr, envir, enclos): object 'MyTestingset' not found
+</pre></div>
+</div></div>
+
+<p> Our new training data set contains 53 variables and 19622 observations where as  the testing data set contains 53 variables and 20 observations.</p>
+
+<div class="chunk" id="unnamed-chunk-5"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">dim</span><span class="hl std">(MyTrainingset)</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in eval(expr, envir, enclos): object 'MyTrainingset' not found
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">dim</span><span class="hl std">(MyTestingset)</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in eval(expr, envir, enclos): object 'MyTestingset' not found
+</pre></div>
+</div></div>
+
+
+
+
+
+<p>Since the data we are working is too large to perform an algorithm, the given training data set partitioned into two: Training data set into two data sets, 60% for myTraining, and subTest 40%. This can be performed with random sampling without replacement.</p>
+
+<div class="chunk" id="unnamed-chunk-6"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl std">SubTrainingsetsamples</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">createDataPartition</span><span class="hl std">(</span><span class="hl kwc">y</span><span class="hl std">=MyTrainingset</span><span class="hl opt">$</span><span class="hl std">classe,</span> <span class="hl kwc">p</span><span class="hl std">=</span><span class="hl num">0.60</span><span class="hl std">,</span> <span class="hl kwc">list</span><span class="hl std">=</span><span class="hl num">FALSE</span><span class="hl std">)</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in createDataPartition(y = MyTrainingset$classe, p = 0.6, list = FALSE): object 'MyTrainingset' not found
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl std">SubTrainingset</span> <span class="hl kwb">&lt;-</span> <span class="hl std">MyTrainingset[SubTrainingsetsamples, ]</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in eval(expr, envir, enclos): object 'MyTrainingset' not found
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl std">SubTestingset</span> <span class="hl kwb">&lt;-</span> <span class="hl std">MyTrainingset[</span><span class="hl opt">-</span><span class="hl std">SubTrainingsetsamples, ]</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in eval(expr, envir, enclos): object 'MyTrainingset' not found
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl com">#dim(SubTrainingset)</span>
+<span class="hl com">#dim(SubTestingset)</span>
+<span class="hl com">#head(SubTrainingset)</span>
+<span class="hl com">#head(SubTestingset)</span>
+</pre></div>
+</div></div>
+
+<p>When we look at variable “classe”, it contains 5 levels: A, B, C, D and E. A plot of the outcome variable will allow us to see the frequency of each levels in the SubTraining data set. As we can see in the figure below level A has more than 4000 occurrences than other levels.</p>
+
+<div class="chunk" id="unnamed-chunk-7"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">plot</span><span class="hl std">(SubTrainingset</span><span class="hl opt">$</span><span class="hl std">classe,</span> <span class="hl kwc">col</span><span class="hl std">=</span><span class="hl str">&quot;green&quot;</span><span class="hl std">,</span> <span class="hl kwc">main</span><span class="hl std">=</span><span class="hl str">&quot;Plot of levels vs frequency in SubTraining data set&quot;</span><span class="hl std">,</span> <span class="hl kwc">xlab</span><span class="hl std">=</span><span class="hl str">&quot;Classe levels&quot;</span><span class="hl std">,</span> <span class="hl kwc">ylab</span><span class="hl std">=</span><span class="hl str">&quot;Frequency&quot;</span><span class="hl std">)</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in plot(SubTrainingset$classe, col = &quot;green&quot;, main = &quot;Plot of levels vs frequency in SubTraining data set&quot;, : object 'SubTrainingset' not found
+</pre></div>
+</div></div>
+
+<p>For prediction we used Decision Tree and Random Forest prediction models.</p>
+
+<div class="chunk" id="unnamed-chunk-8"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl std">Modelrepart</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">rpart</span><span class="hl std">(classe</span> <span class="hl opt">~</span> <span class="hl std">.,</span> <span class="hl kwc">data</span><span class="hl std">=SubTrainingset,</span> <span class="hl kwc">method</span><span class="hl std">=</span><span class="hl str">&quot;class&quot;</span><span class="hl std">)</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in is.data.frame(data): object 'SubTrainingset' not found
+</pre></div>
+</div></div>
+<p>1. Predicting using Decision Tree and Testing the results on SubTestingset data set</p>
+<div class="chunk" id="unnamed-chunk-9"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl std">Prediction_Modelrepart</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">predict</span><span class="hl std">(Modelrepart, SubTestingset,</span> <span class="hl kwc">type</span> <span class="hl std">=</span> <span class="hl str">&quot;class&quot;</span><span class="hl std">)</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in predict(Modelrepart, SubTestingset, type = &quot;class&quot;): object 'Modelrepart' not found
+</pre></div>
+</div></div>
+
+<div class="chunk" id="unnamed-chunk-10"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">rpart.plot</span><span class="hl std">(Modelrepart,</span> <span class="hl kwc">main</span><span class="hl std">=</span><span class="hl str">&quot;Plot of the Decision Tree&quot;</span><span class="hl std">,</span> <span class="hl kwc">type</span><span class="hl std">=</span><span class="hl num">0</span><span class="hl std">,</span> <span class="hl kwc">extra</span><span class="hl std">=</span><span class="hl num">104</span><span class="hl std">,</span><span class="hl kwc">box.col</span><span class="hl std">=</span><span class="hl num">2</span><span class="hl std">,</span> <span class="hl kwc">under</span><span class="hl std">=</span><span class="hl num">TRUE</span><span class="hl std">,</span><span class="hl kwc">varlen</span><span class="hl std">=</span><span class="hl num">2</span><span class="hl std">,</span> <span class="hl kwc">faclen</span><span class="hl std">=</span><span class="hl num">2</span><span class="hl std">)</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in inherits(x, &quot;rpart&quot;): object 'Modelrepart' not found
+</pre></div>
+</div></div>
+
+<div class="chunk" id="unnamed-chunk-11"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">confusionMatrix</span><span class="hl std">(Prediction_Modelrepart, SubTestingset</span><span class="hl opt">$</span><span class="hl std">classe)</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in confusionMatrix(Prediction_Modelrepart, SubTestingset$classe): object 'Prediction_Modelrepart' not found
+</pre></div>
+</div></div>
+<p>2. Predicting using Random Forest and Test the results on SubTestingset data set.</p>
+
+<div class="chunk" id="unnamed-chunk-12"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl std">ModelrandomForest</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">randomForest</span><span class="hl std">(classe</span> <span class="hl opt">~</span><span class="hl std">. ,</span> <span class="hl kwc">data</span><span class="hl std">=SubTrainingset,</span> <span class="hl kwc">method</span><span class="hl std">=</span><span class="hl str">&quot;class&quot;</span><span class="hl std">)</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in eval(expr, envir, enclos): object 'SubTrainingset' not found
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl std">Prediction_Modelrandomforest</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">predict</span><span class="hl std">(ModelrandomForest, SubTestingset,</span> <span class="hl kwc">type</span> <span class="hl std">=</span> <span class="hl str">&quot;class&quot;</span><span class="hl std">)</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in predict(ModelrandomForest, SubTestingset, type = &quot;class&quot;): object 'ModelrandomForest' not found
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">confusionMatrix</span><span class="hl std">(Prediction_Modelrandomforest, SubTestingset</span><span class="hl opt">$</span><span class="hl std">classe)</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in confusionMatrix(Prediction_Modelrandomforest, SubTestingset$classe): object 'Prediction_Modelrandomforest' not found
+</pre></div>
+</div></div>
+
+
+<p>As shown above the accuracy for Random Forest model is 0.9927 where as for for Decision Tree model is  0.7405. Therefore Random Forest algorithm is chosen because it performed better than Decision Trees.  From our cross-validation data none of the test samples will be miss classified.</p> 
+<div class="chunk" id="unnamed-chunk-13"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl std">predictedresult</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">predict</span><span class="hl std">(ModelrandomForest, MyTestingset,</span> <span class="hl kwc">type</span><span class="hl std">=</span><span class="hl str">&quot;class&quot;</span><span class="hl std">)</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in predict(ModelrandomForest, MyTestingset, type = &quot;class&quot;): object 'ModelrandomForest' not found
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl std">predictedresult</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in eval(expr, envir, enclos): object 'predictedresult' not found
+</pre></div>
+</div></div>
+
+<div class="chunk" id="unnamed-chunk-14"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl com"># Write files for submission</span>
+<span class="hl std">pml_write_files</span> <span class="hl kwb">=</span> <span class="hl kwa">function</span><span class="hl std">(</span><span class="hl kwc">x</span><span class="hl std">){</span>
+      <span class="hl std">n</span> <span class="hl kwb">=</span> <span class="hl kwd">length</span><span class="hl std">(x)</span>
+      <span class="hl kwa">for</span><span class="hl std">(i</span> <span class="hl kwa">in</span> <span class="hl num">1</span><span class="hl opt">:</span><span class="hl std">n){</span>
+            <span class="hl std">filename</span> <span class="hl kwb">=</span> <span class="hl kwd">paste0</span><span class="hl std">(</span><span class="hl str">&quot;problem_id_&quot;</span><span class="hl std">,i,</span><span class="hl str">&quot;.txt&quot;</span><span class="hl std">)</span>
+            <span class="hl kwd">write.table</span><span class="hl std">(x[i],</span><span class="hl kwc">file</span><span class="hl std">=filename,</span><span class="hl kwc">quote</span><span class="hl std">=</span><span class="hl num">FALSE</span><span class="hl std">,</span><span class="hl kwc">row.names</span><span class="hl std">=</span><span class="hl num">FALSE</span><span class="hl std">,</span><span class="hl kwc">col.names</span><span class="hl std">=</span><span class="hl num">FALSE</span><span class="hl std">)</span>
+      <span class="hl std">}</span>
+<span class="hl std">}</span>
+
+<span class="hl kwd">pml_write_files</span><span class="hl std">(predictedresult)</span>
+</pre></div>
+<div class="error"><pre class="knitr r">## Error in pml_write_files(predictedresult): object 'predictedresult' not found
+</pre></div>
+</div></div>
+
+<h6> References</h6>
+
+1. http://www.jstatsoft.org/v28/i05/paper
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+
+
+
+
+<div class="chunk" id="unnamed-chunk-15"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">plot</span><span class="hl std">(cars)</span>
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-15-1.png" title="plot of chunk unnamed-chunk-15" alt="plot of chunk unnamed-chunk-15" class="plot" /></div></div>
+
+</body>
+</html>
